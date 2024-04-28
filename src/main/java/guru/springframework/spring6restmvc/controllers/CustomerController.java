@@ -46,14 +46,19 @@ public class CustomerController {
     //@DeleteMapping(value="{id}")
     @DeleteMapping(CUSTOMER_PATH_ID)
     ResponseEntity deleteById(@PathVariable("id") UUID id) {
-        customerService.deletebyId(id);
+        //customerService.deletebyId(id);
+        if (! customerService.deletebyId(id)) {
+            throw new NotFoundException();
+        }
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     //@RequestMapping(value="/{id}", method = RequestMethod.PUT)
     @PutMapping(CUSTOMER_PATH_ID)
     ResponseEntity putCustomer(@PathVariable("id") UUID id, @RequestBody CustomerDTO customerDTO) {
-        customerService.put(id, customerDTO);
+        if (customerService.put(id, customerDTO).isEmpty() ) {
+            throw new NotFoundException();
+        }
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 

@@ -6,14 +6,17 @@ import guru.springframework.spring6restmvc.model.CustomerDTO;
 import guru.springframework.spring6restmvc.repositories.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Primary
 @RequiredArgsConstructor
+@Service
 public class CustomerServiceJpa implements CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
@@ -43,20 +46,39 @@ public class CustomerServiceJpa implements CustomerService {
 
     @Override
     public void patchById(UUID id, CustomerDTO customerDTO) {
-        Optional<Customer> customer = customerRepository.findById(id);
-//        if (customer.isPresent()) {
-//            customer.
-//        }
+        Optional<Customer> customerOp = customerRepository.findById(id);
+        customerOp.ifPresentOrElse(customer -> {
+           // customer.setName(customerDTO.getName());
+           customerRepository.save(customer);
+        }, () -> {
+
+        }
+                );
 
     }
 
     @Override
-    public void put(UUID id, CustomerDTO customerDTO) {
-
+    public Optional<CustomerDTO> put(UUID id, CustomerDTO customerDTO) {
+        AtomicReference<Optional<CustomerDTO>> atomicReference = new AtomicReference<>();
+        Optional<Customer> customerOp = customerRepository.findById(id);
+        customerOp.ifPresentOrElse(customer ->{
+            customer.setName(customerDTO.getName());
+            Customer updCust = customerRepository.save(customer);
+            atomicReference.set(Optional.of(customerMapper.getDtoFromEntity(updCust)));
+        },() ->{
+            atomicReference.set(Optional.empty());
+        }
+        );
+        return atomicReference.get();
     }
 
     @Override
-    public void deletebyId(UUID id) {
+    public boolean deletebyId(UUID id) {
+        if (customerRepository.existsById(id)) {
+            customerRepository.deleteById(id);
+            return true;
+        }
+        return false;
 
     }
 }

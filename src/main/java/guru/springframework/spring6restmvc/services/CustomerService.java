@@ -13,7 +13,7 @@ public interface CustomerService {
 
     void patchById(UUID id, CustomerDTO customerDTO);
 
-    void put(UUID id, CustomerDTO customerDTO);
+    Optional<CustomerDTO> put(UUID id, CustomerDTO customerDTO);
 
-    void deletebyId(UUID id);
+    boolean deletebyId(UUID id);
 }

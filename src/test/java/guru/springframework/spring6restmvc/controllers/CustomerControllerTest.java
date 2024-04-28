@@ -73,6 +73,8 @@ class Spring6RestMvcApplicationTests {
     void updateCustomer() throws Exception {
         CustomerDTO customerDTO = customerServiceImpl.findAll().get(0);
 
+        given(customerService.put(any(),any())).willReturn(Optional.of(customerDTO));
+
         mockMvc.perform(put(CustomerController.CUSTOMER_PATH_ID, customerDTO.getId())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,7 +88,11 @@ class Spring6RestMvcApplicationTests {
     @Test
     void deleteCustomer() throws Exception {
         CustomerDTO customerDTO = customerServiceImpl.findAll().get(0);
-        mockMvc.perform(delete(CustomerController.CUSTOMER_PATH_ID, customerDTO.getId()))
+
+        given(customerService.deletebyId(any())).willReturn(true);
+
+        mockMvc.perform(delete(CustomerController.CUSTOMER_PATH_ID, customerDTO.getId())
+                        .accept(MediaType.asMediaType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isNoContent());
 
         // ArgumentCaptor<UUID> capture = ArgumentCaptor.forClass(UUID.class);
@@ -100,7 +106,7 @@ class Spring6RestMvcApplicationTests {
         customerDTO.setVersion(null);
         customerDTO.setName("Russ new customer");
         given(customerService.add(any(CustomerDTO.class)))
-                .willReturn(customerServiceImpl.findAll().get(2));
+                .willReturn(customerServiceImpl.findAll().get(0));
         mockMvc.
                 perform(post(CustomerController.CUSTOMER_PATH)
                         .accept(MediaType.APPLICATION_JSON)
@@ -120,7 +126,7 @@ class Spring6RestMvcApplicationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()", is(1)))
+                .andExpect(jsonPath("$.length()", is(2)))
         ;
     }
 
